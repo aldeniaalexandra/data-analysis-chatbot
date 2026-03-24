@@ -10,7 +10,9 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Conversation history — a list of messages
 # Each message is a dict with "role" and "content"
+# The system message always goes first — it sets the AI's persona and behavior
 conversation_history = [
+    {"role": "system", "content": "You are a helpful data analysis assistant."},
     {"role": "user", "content": "Say hello!"},
 ]
 
