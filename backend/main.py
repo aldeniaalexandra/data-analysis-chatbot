@@ -1,5 +1,6 @@
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -10,6 +11,16 @@ load_dotenv()
 
 # 1. Initialize the FastAPI app and a single ChatBot instance
 app = FastAPI()
+
+# Add CORS middleware to allow the frontend to talk to the API locally
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 bot = ChatBot()
 
 # Define the expected JSON payload for the chat endpoint
@@ -29,10 +40,7 @@ def upload_file(file: UploadFile = File(...)):
         df = pd.read_csv(file.file)
         
         # Load the data into the chatbot, resetting the conversation history
-        bot.load_data(df)
-        
-        # Get the summary from the analyzer to return to the frontend
-        summary = bot.data_analyzer.get_summary(bot.df)
+        summary = bot.load_data(df)
         
         return {
             "status": "success",

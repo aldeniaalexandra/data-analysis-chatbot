@@ -37,6 +37,8 @@ class ChatBot:
                 )
             }
         ]
+        
+        return data_summary
 
     def chat(self, user_message):
         """Sends a message to the AI, handles execution and self-healing, and returns the result."""
