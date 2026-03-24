@@ -35,6 +35,15 @@ def chat(user_message):
     return assistant_reply
 
 
-# Quick test — one hardcoded message
-reply = chat("Say hello!")
-print(reply)
+# Conversation loop
+print("Chatbot ready. Type 'exit' to quit.\n")
+
+while True:
+    user_input = input("You: ")
+
+    if user_input.strip().lower() == "exit":
+        print("Goodbye!")
+        break
+
+    reply = chat(user_input)
+    print(f"Assistant: {reply}\n")
