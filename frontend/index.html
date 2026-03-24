@@ -1025,7 +1025,71 @@
         transform: rotate(360deg);
       }
     }
+    .code-block {
+      background: rgba(0,0,0,0.15);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 10px;
+      position: relative;
+    }
+    .code-block button {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text2);
+    }
+    .code-block button:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    .code-block pre {
+      padding: 12px;
+      margin: 0;
+      overflow-x: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+    }
+    details.code-toggle {
+      margin-top: 12px;
+    }
+    details.code-toggle summary {
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text3);
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s;
+      list-style: none; /* cross-browser marker removal */
+    }
+    details.code-toggle summary::-webkit-details-marker {
+      display: none;
+    }
+    details.code-toggle summary:hover {
+      color: var(--accent);
+    }
+    details.code-toggle summary svg {
+      transition: transform 0.2s ease;
+    }
+    details.code-toggle[open] summary svg {
+      transform: rotate(90deg);
+    }
+    details.code-toggle .code-block {
+      margin-top: 8px;
+    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -1429,14 +1493,14 @@
         const res = await fetch(`${API}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: msg }) });
         const data = await res.json();
         showTyping(false);
-        addBubble("bot", data.reply !== undefined ? String(data.reply) : "No response.");
+        addBubble("bot", data); // Render the rich JSON object natively
       } catch (err) {
         showTyping(false);
         addBubble("bot", `Connection error. Is the backend running at ${API}?`, true);
       }
     }
 
-    function addBubble(role, text, isError = false, save = true) {
+    function addBubble(role, content, isError = false, save = true) {
       const msgs = document.getElementById("messages");
       const row = document.createElement("div");
       row.className = `msg-row ${role}`;
@@ -1447,22 +1511,85 @@
         img.src = "./logo-white.png"; img.alt = "bot";
         av.appendChild(img);
       } else { av.textContent = "You"; }
+      
       const bub = document.createElement("div");
       bub.className = "bubble" + (isError ? " err" : "");
-      bub.textContent = text;
+      
+      let textStr = "";
+      if (typeof content === "object" && content !== null) {
+        textStr = content.reply || "No response.";
+        bub.textContent = textStr;
+        
+        if (content.chart) {
+          const cw = document.createElement("div");
+          cw.style = "position: relative; height: 300px; width: 100%; margin-top: 10px;";
+          const cv = document.createElement("canvas");
+          cw.appendChild(cv);
+          bub.appendChild(cw);
+          renderChart(cv, content.chart);
+        }
+
+        if (content.code) {
+          const cd = document.createElement("details");
+          cd.className = "code-toggle";
+          const copyIcon = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+          cd.innerHTML = `<summary><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>View executed code</summary><div class="code-block"><button onclick="copyCode(this)" title="Copy Code">${copyIcon}</button><pre><code>${esc(content.code)}</code></pre></div>`;
+          bub.appendChild(cd);
+        }
+      } else {
+        textStr = content;
+        bub.textContent = textStr;
+      }
+
       row.appendChild(av); row.appendChild(bub);
       msgs.appendChild(row);
       scrollBot();
       if (save && activeId) {
         const s = getActive();
         if (s) {
-          s.messages.push({ role, text, isError });
+          s.messages.push({ role, text: content, isError });
           if (role === "user" && s.title === "New conversation") {
-            s.title = text.slice(0, 38) + (text.length > 38 ? "…" : "");
+            s.title = textStr.slice(0, 38) + (textStr.length > 38 ? "…" : "");
             renderHist();
           }
         }
       }
+    }
+    
+    function copyCode(btn) {
+      const code = btn.nextElementSibling.textContent;
+      navigator.clipboard.writeText(code);
+      const oldHTML = btn.innerHTML;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      setTimeout(() => btn.innerHTML = oldHTML, 1500);
+    }
+    
+    function renderChart(canvas, cData) {
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      new Chart(canvas, {
+        type: cData.type || 'bar',
+        data: {
+          labels: cData.labels,
+          datasets: [{
+            label: cData.title || 'Data',
+            data: cData.values,
+            backgroundColor: 'rgba(0, 212, 170, 0.6)',
+            borderColor: 'rgba(0, 212, 170, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: isDark ? '#fff' : '#000' } }
+          },
+          scales: {
+            x: { ticks: { color: isDark ? '#aaa' : '#555' }, grid: { color: isDark ? '#333' : '#ddd' } },
+            y: { ticks: { color: isDark ? '#aaa' : '#555' }, grid: { color: isDark ? '#333' : '#ddd' } }
+          }
+        }
+      });
     }
 
     function showTyping(v) {
