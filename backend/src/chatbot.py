@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from groq import Groq
-from src.code_executor import clean_code, execute_code
+from src.code_executor import CodeExecutor
 from src.data_analyzer import DataAnalyzer
 
 class ChatBot:
@@ -15,6 +15,7 @@ class ChatBot:
         
         # Modules
         self.data_analyzer = DataAnalyzer()
+        self.code_executor = CodeExecutor()
         
         # Model configuration
         self.model = "llama-3.3-70b-versatile"
@@ -60,8 +61,8 @@ class ChatBot:
             self.conversation_history.append({"role": "assistant", "content": assistant_reply})
 
             # 5. Clean the code and execute it
-            cleaned = clean_code(assistant_reply)
-            execution_result = execute_code(cleaned, self.df)
+            cleaned = self.code_executor.clean_code(assistant_reply)
+            execution_result = self.code_executor.execute_code(cleaned, self.df)
             
             # 6. Check for execution errors
             if isinstance(execution_result, str) and (execution_result.startswith("Error:") or execution_result.startswith("Execution Error:")):
