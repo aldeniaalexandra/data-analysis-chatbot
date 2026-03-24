@@ -9,12 +9,6 @@ load_dotenv()
 # Create Groq client
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Conversation history — a list of messages
-# The system message always goes first to set the AI's persona and behavior
-conversation_history = [
-    {"role": "system", "content": "You are a helpful data analysis assistant."},
-]
-
 def get_data_summary(dataset):
     summary = (
         f"--- Dataset Summary ---\n"
@@ -25,6 +19,26 @@ def get_data_summary(dataset):
         f"-----------------------"
     )
     return summary
+
+
+# Load and explore dataset
+print("Loading dataset...")
+df = pd.read_csv("data/data.csv")
+
+# Generate and print the data summary
+data_summary = get_data_summary(df)
+print(data_summary)
+print()
+
+# Conversation history — a list of messages
+# The system message always goes first to set the AI's persona and behavior.
+# Now we inject the data_summary directly into the AI's prompt!
+conversation_history = [
+    {
+        "role": "system", 
+        "content": f"You are a helpful data analysis assistant. Here is the dataset you will be analyzing:\n{data_summary}"
+    },
+]
 
 
 def chat(user_message):
@@ -46,15 +60,6 @@ def chat(user_message):
     # 5. Return the reply text
     return assistant_reply
 
-
-# Load and explore dataset
-print("Loading dataset...")
-df = pd.read_csv("data/data.csv")
-
-# Generate and print the data summary
-data_summary = get_data_summary(df)
-print(data_summary)
-print()
 
 # Conversation loop
 print("Chatbot ready. Type 'exit' to quit.\n")
