@@ -36,7 +36,13 @@ print()
 conversation_history = [
     {
         "role": "system", 
-        "content": f"You are a helpful data analysis assistant. Here is the dataset you will be analyzing:\n{data_summary}"
+        "content": (
+            f"You are a helpful data analysis assistant. Here is the dataset you will be analyzing:\n{data_summary}\n\n"
+            "When asked a question about the data, you must respond ONLY with Python code using pandas that answers the question. "
+            "The code must store the final answer in a variable called `result`. "
+            "Assume the dataset is already loaded into a pandas DataFrame called `df`. "
+            "Do not include any explanations, markdown code blocks, or text. Only return the raw python code."
+        )
     },
 ]
 
