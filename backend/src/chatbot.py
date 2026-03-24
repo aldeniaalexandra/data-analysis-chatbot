@@ -46,6 +46,7 @@ class ChatBot:
                     "If the question would benefit from a chart, populate the `chart` field, otherwise set it to null. "
                     "`chart` should contain only the top 5–10 items for readability. "
                     "Always set `result` as the human-readable answer, not a raw number. "
+                    "IMPORTANT: Adapt the language of your `result` response to match the user's prompt (e.g., if the user asks in Indonesian, reply in Indonesian; if English, reply in English). "
                     "Do not include any explanations, markdown code blocks, or text. Only return the raw JSON object."
                 )
             }
