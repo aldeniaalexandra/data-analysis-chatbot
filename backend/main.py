@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from groq import Groq
+import pandas as pd
 
 # Load environment variables from .env
 load_dotenv()
@@ -34,6 +35,20 @@ def chat(user_message):
     # 5. Return the reply text
     return assistant_reply
 
+
+# Load and explore dataset
+print("Loading dataset...")
+df = pd.read_csv("data/data.csv")
+
+print("\n--- Dataset Exploration ---")
+print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+print("\nColumn Names and Data Types:")
+print(df.dtypes)
+print("\nMissing Values:")
+print(df.isnull().sum())
+print("\nSummary Statistics:")
+print(df.describe(include='all'))
+print("---------------------------\n")
 
 # Conversation loop
 print("Chatbot ready. Type 'exit' to quit.\n")
