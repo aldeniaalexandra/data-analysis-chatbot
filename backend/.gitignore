@@ -1,4 +1,25 @@
-.venv/
+.venv
 .env
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+data/
+outputs/
+
+# Build / packaging
+dist/
+build/
+*.egg-info/
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Uploaded files
+uploads/
+*.csv
+*.xlsx
+*.xls
+*.json.bak

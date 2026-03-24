@@ -1025,13 +1025,15 @@
         transform: rotate(360deg);
       }
     }
+
     .code-block {
-      background: rgba(0,0,0,0.15);
+      background: rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border);
       border-radius: 6px;
       margin-top: 10px;
       position: relative;
     }
+
     .code-block button {
       position: absolute;
       top: 5px;
@@ -1046,10 +1048,12 @@
       justify-content: center;
       color: var(--text2);
     }
+
     .code-block button:hover {
       background: var(--accent);
       color: #fff;
     }
+
     .code-block pre {
       padding: 12px;
       margin: 0;
@@ -1058,9 +1062,11 @@
       font-size: 11px;
       color: var(--text2);
     }
+
     details.code-toggle {
       margin-top: 12px;
     }
+
     details.code-toggle summary {
       cursor: pointer;
       font-size: 11px;
@@ -1071,20 +1077,26 @@
       align-items: center;
       gap: 5px;
       transition: color 0.15s;
-      list-style: none; /* cross-browser marker removal */
+      list-style: none;
+      /* cross-browser marker removal */
     }
+
     details.code-toggle summary::-webkit-details-marker {
       display: none;
     }
+
     details.code-toggle summary:hover {
       color: var(--accent);
     }
+
     details.code-toggle summary svg {
       transition: transform 0.2s ease;
     }
+
     details.code-toggle[open] summary svg {
       transform: rotate(90deg);
     }
+
     details.code-toggle .code-block {
       margin-top: 8px;
     }
@@ -1217,7 +1229,7 @@
           <div class="empty-state" id="empty-state">
             <div class="e-icon"><img src="./logo-white.png" alt="logo" class="empty-logo" /></div>
             <h2>Ask your data anything</h2>
-            <p>Upload a CSV file above, then ask questions in plain English.</p>
+            <p>Upload a CSV file above, then ask questions.</p>
             <div class="hint-pills">
               <div class="hint-pill" onclick="useHint(this)">How many rows?</div>
               <div class="hint-pill" onclick="useHint(this)">Any missing values?</div>
@@ -1254,7 +1266,7 @@
   </div>
 
   <script>
-    const API = "http://localhost:8000";
+    const API = "https://cognitus-ai-607887648313.asia-southeast1.run.app";
 
     // State
     let sessions = [], activeId = null;
@@ -1296,7 +1308,7 @@
         msgs.innerHTML = `<div class="empty-state" id="empty-state">
       <div class="e-icon"><img src="./logo-white.png" alt="logo" class="empty-logo"/></div>
       <h2>Ask your data anything</h2>
-      <p>Upload a CSV file above, then ask questions in plain English.</p>
+      <p>Upload a CSV file above, then ask questions.</p>
       <div class="hint-pills">
         <div class="hint-pill" onclick="useHint(this)">How many rows?</div>
         <div class="hint-pill" onclick="useHint(this)">Any missing values?</div>
@@ -1511,15 +1523,15 @@
         img.src = "./logo-white.png"; img.alt = "bot";
         av.appendChild(img);
       } else { av.textContent = "You"; }
-      
+
       const bub = document.createElement("div");
       bub.className = "bubble" + (isError ? " err" : "");
-      
+
       let textStr = "";
       if (typeof content === "object" && content !== null) {
         textStr = content.reply || "No response.";
         bub.textContent = textStr;
-        
+
         if (content.chart) {
           const cw = document.createElement("div");
           cw.style = "position: relative; height: 300px; width: 100%; margin-top: 10px;";
@@ -1555,7 +1567,7 @@
         }
       }
     }
-    
+
     function copyCode(btn) {
       const code = btn.nextElementSibling.textContent;
       navigator.clipboard.writeText(code);
@@ -1563,7 +1575,7 @@
       btn.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
       setTimeout(() => btn.innerHTML = oldHTML, 1500);
     }
-    
+
     function renderChart(canvas, cData) {
       const isDark = document.documentElement.dataset.theme === 'dark';
       new Chart(canvas, {
