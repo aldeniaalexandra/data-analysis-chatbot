@@ -4,6 +4,8 @@ An AI-powered data analysis chatbot that lets you upload a CSV dataset and ask q
 
 **Live Demo:** [https://cognitus-ai-491210.web.app](https://cognitus-ai-491210.web.app)
 
+---
+
 ## Features
 
 - Upload any CSV file and get an instant dataset summary
@@ -17,6 +19,8 @@ An AI-powered data analysis chatbot that lets you upload a CSV dataset and ask q
 - Dark and light theme toggle
 - Responsive sidebar layout
 
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -27,6 +31,8 @@ An AI-powered data analysis chatbot that lets you upload a CSV dataset and ask q
 | Data Processing | pandas |
 | Frontend Hosting | Firebase Hosting |
 | Backend Containerization | Docker |
+
+---
 
 ## Project Structure
 
@@ -48,6 +54,8 @@ data-analysis-chatbot/
 ├── firebase.json               # Firebase Hosting config
 └── README.md
 ```
+
+---
 
 ## Getting Started
 
@@ -96,6 +104,8 @@ Open `frontend/index.html` directly in your browser, or serve it with any static
 
 > **Note:** The frontend is configured to point to the deployed backend URL by default. For local development, update the `API_BASE` variable in `frontend/index.html` to `http://localhost:8000`.
 
+---
+
 ## API Endpoints
 
 | Method | Endpoint | Description |
@@ -121,6 +131,8 @@ Open `frontend/index.html` directly in your browser, or serve it with any static
 
 `chart` is `null` when a chart is not relevant to the question.
 
+---
+
 ## Running with Docker
 
 ```bash
@@ -129,6 +141,8 @@ docker build -t cognitus-ai-backend .
 docker run -p 8080:8080 --env-file .env cognitus-ai-backend
 ```
 
+---
+
 ## Deploying the Frontend
 
 The frontend is deployed to Firebase Hosting. To redeploy:
@@ -136,6 +150,8 @@ The frontend is deployed to Firebase Hosting. To redeploy:
 ```bash
 firebase deploy --only hosting
 ```
+
+---
 
 ## Usage
 
