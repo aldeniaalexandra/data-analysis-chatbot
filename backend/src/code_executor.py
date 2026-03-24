@@ -1,4 +1,13 @@
+import re
 import pandas as pd
+
+def clean_code(code_string):
+    """Strips markdown code blocks from the AI's response."""
+    # Find everything between ```python and ```
+    match = re.search(r"```[a-zA-Z]*\n(.*?)\n```", code_string, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return code_string.strip()
 
 def execute_code(code_string, df):
     """
@@ -11,6 +20,9 @@ def execute_code(code_string, df):
     Returns:
         The value of the 'result' variable, or an error message.
     """
+    # Clean the code string first
+    code_string = clean_code(code_string)
+    
     # Create a local dictionary context for exec() to use and modify
     # We pass in `df` so the code can access it, and `pd` just in case.
     local_env = {"df": df, "pd": pd}
