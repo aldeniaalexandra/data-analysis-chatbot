@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from groq import Groq
 from src.code_executor import clean_code, execute_code
+from src.data_analyzer import DataAnalyzer
 
 class ChatBot:
     def __init__(self):
@@ -12,28 +13,15 @@ class ChatBot:
         self.df = None
         self.conversation_history = []
         
+        # Modules
+        self.data_analyzer = DataAnalyzer()
+        
         # Model configuration
         self.model = "llama-3.3-70b-versatile"
-
-    def _get_data_summary(self):
-        """Helper to generate summary of the loaded dataset."""
-        if self.df is None:
-            return "No dataset loaded."
-            
-        summary = (
-            f"--- Dataset Summary ---\n"
-            f"Rows: {self.df.shape[0]}, Columns: {self.df.shape[1]}\n\n"
-            f"Column Names and Data Types:\n{self.df.dtypes.to_string()}\n\n"
-            f"Missing Values:\n{self.df.isnull().sum().to_string()}\n\n"
-            f"Summary Statistics:\n{self.df.describe(include='all').to_string()}\n"
-            f"-----------------------"
-        )
-        return summary
-
     def load_data(self, df):
         """Loads a new dataframe and resets conversation history."""
         self.df = df
-        data_summary = self._get_data_summary()
+        data_summary = self.data_analyzer.get_summary(self.df)
         
         # Reset the history with a fresh system prompt
         self.conversation_history = [
