@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 import pandas as pd
+from src.code_executor import clean_code, execute_code
 
 # Load environment variables from .env
 load_dotenv()
@@ -57,14 +58,18 @@ def chat(user_message):
         model="llama-3.3-70b-versatile",
     )
 
-    # 3. Extract the assistant's reply
+    # 3. Extract the assistant's reply (the raw Python code)
     assistant_reply = response.choices[0].message.content
 
-    # 4. Append the reply to the history so the model remembers it
+    # 4. Append the raw code to the history so the model remembers it
     conversation_history.append({"role": "assistant", "content": assistant_reply})
 
-    # 5. Return the reply text
-    return assistant_reply
+    # 5. Connect the executor: clean the code and run it
+    cleaned = clean_code(assistant_reply)
+    execution_result = execute_code(cleaned, df)
+
+    # 6. Return the final data result instead of the AI's code text
+    return execution_result
 
 
 # Conversation loop
