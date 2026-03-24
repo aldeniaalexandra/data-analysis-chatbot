@@ -52,24 +52,38 @@ def chat(user_message):
     # 1. Append the user's message to the history
     conversation_history.append({"role": "user", "content": user_message})
 
-    # 2. Send the entire history to the Groq API
-    response = client.chat.completions.create(
-        messages=conversation_history,
-        model="llama-3.3-70b-versatile",
-    )
+    max_retries = 3
+    for attempt in range(max_retries):
+        # 2. Send the history to the Groq API
+        response = client.chat.completions.create(
+            messages=conversation_history,
+            model="llama-3.3-70b-versatile",
+        )
 
-    # 3. Extract the assistant's reply (the raw Python code)
-    assistant_reply = response.choices[0].message.content
+        # 3. Extract the assistant's reply (the raw Python code)
+        assistant_reply = response.choices[0].message.content
 
-    # 4. Append the raw code to the history so the model remembers it
-    conversation_history.append({"role": "assistant", "content": assistant_reply})
+        # 4. Append the raw code to the history so the model remembers it
+        conversation_history.append({"role": "assistant", "content": assistant_reply})
 
-    # 5. Connect the executor: clean the code and run it
-    cleaned = clean_code(assistant_reply)
-    execution_result = execute_code(cleaned, df)
+        # 5. Clean the code and execute it
+        cleaned = clean_code(assistant_reply)
+        execution_result = execute_code(cleaned, df)
+        
+        # 6. Check for execution errors
+        # Our executor returns strings starting with "Error:" or "Execution Error:" when something breaks
+        if isinstance(execution_result, str) and (execution_result.startswith("Error:") or execution_result.startswith("Execution Error:")):
+            if attempt < max_retries - 1:
+                # Add the error message to the history as if the user is asking it to fix the bug
+                print(f"[Self-Healing] Execution failed on attempt {attempt + 1}. Asking AI to fix...")
+                error_prompt = f"The code failed with this error:\n{execution_result}\n\nPlease fix the code and write it again. Ensure the output is ONLY valid Python code."
+                conversation_history.append({"role": "user", "content": error_prompt})
+                continue # Try the loop again
+            else:
+                return f"I'm sorry, I couldn't write the correct code after {max_retries} attempts. Final error: {execution_result}"
 
-    # 6. Return the final data result instead of the AI's code text
-    return execution_result
+        # 7. If no error, return the successful result!
+        return execution_result
 
 
 # Conversation loop
