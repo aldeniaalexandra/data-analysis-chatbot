@@ -15,6 +15,17 @@ conversation_history = [
     {"role": "system", "content": "You are a helpful data analysis assistant."},
 ]
 
+def get_data_summary(dataset):
+    summary = (
+        f"--- Dataset Summary ---\n"
+        f"Rows: {dataset.shape[0]}, Columns: {dataset.shape[1]}\n\n"
+        f"Column Names and Data Types:\n{dataset.dtypes.to_string()}\n\n"
+        f"Missing Values:\n{dataset.isnull().sum().to_string()}\n\n"
+        f"Summary Statistics:\n{dataset.describe(include='all').to_string()}\n"
+        f"-----------------------"
+    )
+    return summary
+
 
 def chat(user_message):
     # 1. Append the user's message to the history
@@ -40,15 +51,10 @@ def chat(user_message):
 print("Loading dataset...")
 df = pd.read_csv("data/data.csv")
 
-print("\n--- Dataset Exploration ---")
-print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
-print("\nColumn Names and Data Types:")
-print(df.dtypes)
-print("\nMissing Values:")
-print(df.isnull().sum())
-print("\nSummary Statistics:")
-print(df.describe(include='all'))
-print("---------------------------\n")
+# Generate and print the data summary
+data_summary = get_data_summary(df)
+print(data_summary)
+print()
 
 # Conversation loop
 print("Chatbot ready. Type 'exit' to quit.\n")
