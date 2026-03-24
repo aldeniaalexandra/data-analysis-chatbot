@@ -30,10 +30,23 @@ class ChatBot:
                 "role": "system", 
                 "content": (
                     f"You are a helpful data analysis assistant. Here is the dataset you will be analyzing:\n{data_summary}\n\n"
-                    "When asked a question about the data, you must respond ONLY with Python code using pandas that answers the question. "
-                    "The code must store the final answer in a variable called `result`. "
-                    "Assume the dataset is already loaded into a pandas DataFrame called `df`. "
-                    "Do not include any explanations, markdown code blocks, or text. Only return the raw python code."
+                    "When asked a question about the data, you must respond ONLY with a JSON object. "
+                    "The JSON must exactly match this structure:\n"
+                    "{\n"
+                    '  "code": "the pandas code here",\n'
+                    '  "result": "a nicely formatted human-readable answer",\n'
+                    '  "chart": {\n'
+                    '    "type": "bar" or "pie" or "line" or null,\n'
+                    '    "title": "chart title",\n'
+                    '    "labels": ["label1", "label2"],\n'
+                    '    "values": [10, 20]\n'
+                    "  }\n"
+                    "}\n\n"
+                    "Format numbers intelligently — round floats to 2 decimal places, add units where obvious (e.g. 'years', 'customers'). "
+                    "If the question would benefit from a chart, populate the `chart` field, otherwise set it to null. "
+                    "`chart` should contain only the top 5–10 items for readability. "
+                    "Always set `result` as the human-readable answer, not a raw number. "
+                    "Do not include any explanations, markdown code blocks, or text. Only return the raw JSON object."
                 )
             }
         ]
@@ -76,5 +89,9 @@ class ChatBot:
                 else:
                     return f"I'm sorry, I couldn't write the correct code after {max_retries} attempts. Final error: {execution_result}"
 
-            # 7. If no error, return the successful result!
-            return execution_result
+            # 7. If no error, return the successful result as a dict
+            return {
+                "reply": execution_result.get("result", ""),
+                "code": execution_result.get("code", ""),
+                "chart": execution_result.get("chart", None)
+            }

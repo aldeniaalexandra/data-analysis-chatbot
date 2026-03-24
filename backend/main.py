@@ -54,7 +54,7 @@ def upload_file(file: UploadFile = File(...)):
 @app.post("/chat")
 def chat_endpoint(request: ChatRequest):
     # Pass the message payload directly into our ChatBot's loop
-    result = bot.chat(request.message)
+    result_dict = bot.chat(request.message)
     
-    # Return the AI's execution result
-    return {"reply": result}
+    # Return the full AI dictionary (reply, code, chart) natively to the frontend!
+    return result_dict
