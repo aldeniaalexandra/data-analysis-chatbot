@@ -1,0 +1,20 @@
+[33m8c11db8[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m refactor: simplify main entry point
+[33mac520d2[m refactor: create DataAnalyzer class for dataset handling
+[33md29da33[m refactor: move chatbot logic into ChatBot class
+[33mcf2d143[m feat: implement self-healing loop for code execution errors
+[33m6c02531[m feat: integrate code execution into chatbot pipeline
+[33m86da24f[m feat: add code cleaning utility for LLM output
+[33m0d9cb20[m feat: implement code execution module using exec
+[33ma930ffe[m feat: update system prompt for code generation behavior
+[33m33c1dc1[m feat: inject dataset summary into system prompt
+[33m582921e[m feat: implement data summary function
+[33m8f97b98[m feat: load dataset and explore basic info
+[33m6798e7e[m feat: add CLI chat loop
+[33mc697b7a[m feat: implement chat function with groq api
+[33m991e75a[m feat: add system prompt to chatbot
+[33m5bd73a6[m feat: add conversation history structure
+[33m06af153[m feat: test groq api connection
+[33mcda5aeb[m chore: add gitignore for env and venv
+[33mc3cd825[m chore: add project dependencies
+[33m7c476fc[m chore: initialize project structure
+[33m97d551b[m chore: initialize project structure
