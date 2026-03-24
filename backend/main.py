@@ -1,31 +1,52 @@
 import pandas as pd
+from fastapi import FastAPI, UploadFile, File
+from pydantic import BaseModel
 from dotenv import load_dotenv
+
 from src.chatbot import ChatBot
 
-def main():
-    # 1. Load environment variables
-    load_dotenv()
-    
-    # 2. Initialize the AI Chatbot object
-    bot = ChatBot()
-    
-    # 3. Load the dataset (simulating a user upload pipeline)
-    print("Loading dataset into ChatBot...")
-    df = pd.read_csv("data/data.csv")
-    bot.load_data(df)
-    
-    # 4. Interactive conversation loop
-    print("Chatbot ready. Type 'exit' to quit.\n")
-    
-    while True:
-        user_input = input("You: ")
-        
-        if user_input.strip().lower() == "exit":
-            print("Goodbye!")
-            break
-            
-        reply = bot.chat(user_input)
-        print(f"Assistant: {reply}\n")
+# Load environment variables
+load_dotenv()
 
-if __name__ == "__main__":
-    main()
+# 1. Initialize the FastAPI app and a single ChatBot instance
+app = FastAPI()
+bot = ChatBot()
+
+# Define the expected JSON payload for the chat endpoint
+class ChatRequest(BaseModel):
+    message: str
+
+# 4. Simple GET endpoint to confirm server health
+@app.get("/")
+def read_root():
+    return {"status": "Server is running", "message": "Welcome to the Data Analysis Chatbot API!"}
+
+# 2. POST /upload endpoint to load a new dataset
+@app.post("/upload")
+def upload_file(file: UploadFile = File(...)):
+    try:
+        # Read the uploaded CSV file into a Pandas DataFrame
+        df = pd.read_csv(file.file)
+        
+        # Load the data into the chatbot, resetting the conversation history
+        bot.load_data(df)
+        
+        # Get the summary from the analyzer to return to the frontend
+        summary = bot.data_analyzer.get_summary(bot.df)
+        
+        return {
+            "status": "success",
+            "message": f"Successfully loaded {file.filename}",
+            "summary": summary
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to upload file: {str(e)}"}
+
+# 3. POST /chat endpoint for AI conversation
+@app.post("/chat")
+def chat_endpoint(request: ChatRequest):
+    # Pass the message payload directly into our ChatBot's loop
+    result = bot.chat(request.message)
+    
+    # Return the AI's execution result
+    return {"reply": result}
