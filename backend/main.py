@@ -15,7 +15,10 @@ app = FastAPI()
 # Add CORS middleware to allow the frontend to talk to the API locally
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://cognitus-ai-491210.web.app"],
+    allow_origins=[
+        "https://cognitus-ai-491210.web.app",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

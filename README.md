@@ -8,16 +8,16 @@ An AI-powered data analysis chatbot that lets you upload a CSV dataset and ask q
 
 ## Features
 
-- Upload any CSV file and get an instant dataset summary
+- Upload any CSV file via drag-and-drop or file picker
 - Ask questions in natural language (supports English and Indonesian)
 - AI generates and executes pandas code behind the scenes
 - Self-healing code execution: if the generated code fails, the AI automatically retries and fixes it (up to 3 attempts)
 - Structured JSON responses with a human-readable answer, the generated code, and optional chart data
 - Interactive charts rendered with Chart.js (bar, pie, line)
 - Paginated, sortable data preview table
-- Chat history management with rename and delete support
-- Dark and light theme toggle
-- Responsive sidebar layout
+- Chat history with rename and delete, persisted in localStorage
+- Light (default) and dark theme
+- Responsive layout for desktop, tablet, and mobile
 
 ---
 
@@ -25,7 +25,9 @@ An AI-powered data analysis chatbot that lets you upload a CSV dataset and ask q
 
 | Layer | Technology |
 |---|---|
-| Frontend | Vanilla HTML, CSS, JavaScript |
+| Frontend | Next.js (App Router, static export), React, TypeScript |
+| UI | Tailwind CSS v4, shadcn/ui, Motion, Chart.js |
+| Fonts | Self-hosted: Sora (display), Schibsted Grotesk (body), Spline Sans Mono (code/numbers) |
 | Backend | Python, FastAPI |
 | AI Model | Groq API (llama-3.3-70b-versatile) |
 | Data Processing | pandas |
@@ -47,11 +49,15 @@ data-analysis-chatbot/
 │   ├── requirements.txt
 │   ├── Dockerfile
 │   └── .env                    # Environment variables (not committed)
-├── frontend/
-│   ├── index.html              # Single-page frontend application
-│   ├── logo-black.png
-│   └── logo-white.png
-├── firebase.json               # Firebase Hosting config
+├── web/                        # Next.js frontend
+│   ├── app/                    # App Router pages, layout, theme, self-hosted fonts
+│   ├── components/
+│   │   ├── app/                # Sidebar, data preview, chat bubbles, chart, theme toggle
+│   │   └── ui/                 # shadcn/ui components
+│   ├── lib/                    # API client, CSV parser, session persistence
+│   └── next.config.ts          # output: "export" for static hosting
+├── frontend/                   # Legacy vanilla HTML frontend (superseded by web/)
+├── firebase.json               # Firebase Hosting config (serves web/out)
 └── README.md
 ```
 
@@ -62,6 +68,7 @@ data-analysis-chatbot/
 ### Prerequisites
 
 - Python 3.11+
+- Node.js 20+
 - A [Groq API key](https://console.groq.com)
 
 ### 1. Clone the repository
@@ -98,11 +105,23 @@ uvicorn main:app --reload
 
 The API will be available at `http://localhost:8000`.
 
-### 5. Open the frontend
+### 5. Run the frontend
 
-Open `frontend/index.html` directly in your browser, or serve it with any static file server.
+```bash
+cd web
+npm install
+```
 
-> **Note:** The frontend is configured to point to the deployed backend URL by default. For local development, update the `API_BASE` variable in `frontend/index.html` to `http://localhost:8000`.
+For local development against the local backend, set the API base URL and start the dev server:
+
+```bash
+# PowerShell
+$env:NEXT_PUBLIC_API_BASE = "http://localhost:8000"; npm run dev
+# macOS/Linux
+# NEXT_PUBLIC_API_BASE=http://localhost:8000 npm run dev
+```
+
+Open `http://localhost:3000`. Without `NEXT_PUBLIC_API_BASE`, the frontend points to the deployed Cloud Run backend.
 
 ---
 
@@ -145,17 +164,22 @@ docker run -p 8080:8080 --env-file .env cognitus-ai-backend
 
 ## Deploying the Frontend
 
-The frontend is deployed to Firebase Hosting. To redeploy:
+Build the static export, then deploy to Firebase Hosting:
 
 ```bash
+cd web
+npm run build
+cd ..
 firebase deploy --only hosting
 ```
+
+`firebase.json` serves the `web/out` directory.
 
 ---
 
 ## Usage
 
-1. Open the app and click **Upload CSV** to load your dataset.
+1. Open the app and drop a CSV file onto the upload area (or click to browse).
 2. The app will display a paginated, sortable preview of your data.
 3. Type a question in the chat input (e.g., "What is the average sales per region?").
 4. The AI will analyze your data and return a written answer, the code it ran, and a chart if applicable.
