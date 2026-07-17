@@ -56,7 +56,6 @@ data-analysis-chatbot/
 │   │   └── ui/                 # shadcn/ui components
 │   ├── lib/                    # API client, CSV parser, session persistence
 │   └── next.config.ts          # output: "export" for static hosting
-├── frontend/                   # Legacy vanilla HTML frontend (superseded by web/)
 ├── firebase.json               # Firebase Hosting config (serves web/out)
 └── README.md
 ```
