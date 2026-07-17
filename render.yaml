@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: cognitus-ai-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
