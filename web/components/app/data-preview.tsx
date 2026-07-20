@@ -116,7 +116,7 @@ export function DataPreview({
           </label>
         </div>
       </header>
-      <div className="max-h-80 overflow-auto border-y border-border">
+      <div className="scrollbar-visible max-h-80 overflow-auto border-y border-border">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-card">
             <TableRow className="hover:bg-transparent">
