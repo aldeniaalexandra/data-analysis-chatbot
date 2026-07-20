@@ -30,15 +30,17 @@ function CodeBlock({ code }: { code: string }) {
         View executed code
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="relative mt-2 rounded-xl border bg-muted/60">
-          <button
-            onClick={copy}
-            aria-label="Copy code"
-            className="absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground transition-colors hover:text-primary"
-          >
-            {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-          </button>
-          <pre className="overflow-x-auto p-4 pr-10 font-mono text-xs leading-relaxed text-foreground/80">
+        <div className="mt-2 overflow-hidden rounded-xl border bg-muted/60">
+          <div className="flex items-center justify-end border-b border-border/60 px-2 py-1">
+            <button
+              onClick={copy}
+              aria-label="Copy code"
+              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-primary"
+            >
+              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+            </button>
+          </div>
+          <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-foreground/80">
             <code>{code}</code>
           </pre>
         </div>

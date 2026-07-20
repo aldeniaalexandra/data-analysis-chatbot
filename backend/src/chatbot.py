@@ -67,8 +67,10 @@ class ChatBot:
                     "or second-guess it. Respond ONLY with a JSON object: {\"reply\": \"...\"}. The reply must be "
                     "a nicely formatted, human-readable sentence answering the question using the given result "
                     "verbatim (round floats sensibly, add clear units where obvious, e.g. 'years', 'customers'). "
-                    "Reply in the same language as the user's question — Indonesian if asked in Indonesian, "
-                    "English if asked in English. Do not include markdown, explanations, or text outside the JSON."
+                    "CRITICAL: detect the language of the user's question below and reply in that exact same "
+                    "language — never translate or default to another language. If the question is written in "
+                    "English, the reply must be entirely in English; if written in Indonesian, the reply must be "
+                    "entirely in Indonesian. Do not include markdown, explanations, or text outside the JSON."
                 ),
             },
             {
