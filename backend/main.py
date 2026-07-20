@@ -18,6 +18,7 @@ app.add_middleware(
     allow_origins=[
         "https://cognitus-ai-491210.web.app",
         "http://localhost:3000",
+        "https://aldeniaalexandra-cognitus-ai.koyeb.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
