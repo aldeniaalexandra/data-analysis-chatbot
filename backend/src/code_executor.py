@@ -17,26 +17,44 @@ class CodeExecutor:
         except json.JSONDecodeError as e:
             return {"error": f"Invalid JSON response: {str(e)}", "raw": code_string}
 
+    # Restricted builtins — block os, subprocess, sys, import, open, exec, eval, compile
+    _SAFE_BUILTINS = {
+        k: v for k, v in __builtins__.items()
+        if k in (
+            "abs", "all", "any", "bool", "dict", "divmod", "enumerate",
+            "filter", "float", "format", "frozenset", "getattr", "hasattr",
+            "hash", "int", "isinstance", "issubclass", "iter", "len", "list",
+            "map", "max", "min", "next", "print", "range", "repr", "reversed",
+            "round", "set", "slice", "sorted", "str", "sum", "tuple", "type",
+            "zip", "True", "False", "None", "ValueError", "TypeError",
+            "KeyError", "IndexError", "AttributeError", "Exception",
+        )
+    } if isinstance(__builtins__, dict) else {
+        k: getattr(__builtins__, k) for k in (
+            "abs", "all", "any", "bool", "dict", "divmod", "enumerate",
+            "filter", "float", "format", "frozenset", "getattr", "hasattr",
+            "hash", "int", "isinstance", "issubclass", "iter", "len", "list",
+            "map", "max", "min", "next", "print", "range", "repr", "reversed",
+            "round", "set", "slice", "sorted", "str", "sum", "tuple", "type",
+            "zip", "True", "False", "None", "ValueError", "TypeError",
+            "KeyError", "IndexError", "AttributeError", "Exception",
+        ) if hasattr(__builtins__, k)
+    }
+
     def execute_code(self, parsed_json, df):
         """
-        Executes the generated Python code safely and returns the JSON payload.
+        Executes the generated Python code in a restricted environment.
         """
-        # If clean_code failed to parse JSON, it returns a dict with an 'error' key
-        # We stringify it so ChatBot's error logic (startswith "Error:") catches it!
         if isinstance(parsed_json, dict) and "error" in parsed_json:
             return f"Error: {parsed_json['error']}"
-            
+
         code_string = parsed_json.get("code", "")
+        safe_globals = {"__builtins__": self._SAFE_BUILTINS}
         local_env = {"df": df, "pd": pd}
-        
+
         try:
-            # We execute the code snippet just to ensure it runs without syntax/runtime errors!
             if code_string:
-                exec(code_string, {}, local_env)
-            
-            # The AI already provided the nicely format human-readable 'result' text in the JSON
-            # so we just return the full parsed JSON object directly back to ChatBot
+                exec(code_string, safe_globals, local_env)
             return parsed_json
-                
         except Exception as e:
             return f"Execution Error: {str(e)}"

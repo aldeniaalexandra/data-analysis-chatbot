@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,20 +7,21 @@ from dotenv import load_dotenv
 
 from src.chatbot import ChatBot
 
-# Load environment variables
 load_dotenv()
 
-# 1. Initialize the FastAPI app and a single ChatBot instance
 app = FastAPI()
 
-# Add CORS middleware to allow the frontend to talk to the API locally
+# CORS: add Railway/upstream URL via ALLOWED_ORIGINS env var (comma-separated)
+_default_origins = [
+    "https://cognitus-ai-491210.web.app",
+    "http://localhost:3000",
+]
+_extra = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+_origins = _default_origins + _extra
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://cognitus-ai-491210.web.app",
-        "http://localhost:3000",
-        "https://aldeniaalexandra-cognitus-ai.koyeb.app",
-    ],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
