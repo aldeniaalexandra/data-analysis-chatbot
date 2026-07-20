@@ -43,18 +43,34 @@ class CodeExecutor:
 
     def execute_code(self, parsed_json, df):
         """
-        Executes the generated Python code in a restricted environment.
+        Executes the generated Python code in a restricted environment and
+        returns the values it actually computed — never the model's own
+        unverified guess of what the code would produce.
+
+        The code is required to assign its final answer to a variable named
+        `result`, and optionally a `chart` dict, both read back from the
+        exec sandbox after it runs.
         """
         if isinstance(parsed_json, dict) and "error" in parsed_json:
             return f"Error: {parsed_json['error']}"
 
         code_string = parsed_json.get("code", "")
+        if not code_string:
+            return "Execution Error: no `code` field was provided"
+
         safe_globals = {"__builtins__": self._SAFE_BUILTINS}
         local_env = {"df": df, "pd": pd}
 
         try:
-            if code_string:
-                exec(code_string, safe_globals, local_env)
-            return parsed_json
+            exec(code_string, safe_globals, local_env)
         except Exception as e:
             return f"Execution Error: {str(e)}"
+
+        if "result" not in local_env:
+            return "Execution Error: the code must assign its final answer to a variable named `result`"
+
+        return {
+            "code": code_string,
+            "result": local_env["result"],
+            "chart": local_env.get("chart"),
+        }

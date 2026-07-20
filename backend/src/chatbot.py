@@ -23,36 +23,63 @@ class ChatBot:
         """Loads a new dataframe and resets conversation history."""
         self.df = df
         data_summary = self.data_analyzer.get_summary(self.df)
-        
+
         # Reset the history with a fresh system prompt
         self.conversation_history = [
             {
-                "role": "system", 
+                "role": "system",
                 "content": (
                     f"You are a helpful data analysis assistant. Here is the dataset you will be analyzing:\n{data_summary}\n\n"
                     "When asked a question about the data, you must respond ONLY with a JSON object. "
                     "The JSON must exactly match this structure:\n"
                     "{\n"
-                    '  "code": "the pandas code here",\n'
-                    '  "result": "a nicely formatted human-readable answer",\n'
-                    '  "chart": {\n'
-                    '    "type": "bar" or "pie" or "line" or null,\n'
-                    '    "title": "chart title",\n'
-                    '    "labels": ["label1", "label2"],\n'
-                    '    "values": [10, 20]\n'
-                    "  }\n"
+                    '  "code": "the pandas code here"\n'
                     "}\n\n"
-                    "Format numbers intelligently — round floats to 2 decimal places, add units where obvious (e.g. 'years', 'customers'). "
-                    "If the question would benefit from a chart, populate the `chart` field, otherwise set it to null. "
-                    "`chart` should contain only the top 5–10 items for readability. "
-                    "Always set `result` as the human-readable answer, not a raw number. "
-                    "IMPORTANT: Adapt the language of your `result` response to match the user's prompt (e.g., if the user asks in Indonesian, reply in Indonesian; if English, reply in English). "
-                    "Do not include any explanations, markdown code blocks, or text. Only return the raw JSON object."
+                    "The `code` must be valid Python operating on the already-loaded DataFrame `df` (and `pd` if needed). "
+                    "It MUST assign its final computed answer to a variable named `result` — a number, string, list, "
+                    "or dict, whatever fits the question. A bare expression or a `print(...)` call is NOT enough, "
+                    "the answer must be assigned: `result = ...`. If the question has multiple parts, combine all "
+                    "of them into one `result` value, e.g. a dict with one key per part, so nothing gets dropped.\n"
+                    "If the question would benefit from a chart (a ranking, breakdown, or trend across 2+ items), "
+                    "ALSO assign a variable named `chart` as a dict with this exact shape, built from REAL values "
+                    "your code computed — never invent numbers:\n"
+                    '{ "type": "bar" | "pie" | "line", "title": "...", "labels": [...], "values": [...] }\n'
+                    "Keep `chart` to the top 5-10 items for readability. Omit it (or assign None) if no chart is warranted.\n"
+                    "Do not include any explanations, markdown code blocks, or text outside the JSON. Only return the raw JSON object."
                 )
             }
         ]
-        
+
         return data_summary
+
+    def _phrase_result(self, user_message, result_value):
+        """
+        Asks the model to phrase a human-readable sentence around a value that
+        was already computed by executing the code — the model is not allowed
+        to recompute or alter the number itself, only word it naturally.
+        """
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You phrase data-analysis results for end users. You will be given the user's original "
+                    "question and the exact computed result — it is already correct and final, do not recompute "
+                    "or second-guess it. Respond ONLY with a JSON object: {\"reply\": \"...\"}. The reply must be "
+                    "a nicely formatted, human-readable sentence answering the question using the given result "
+                    "verbatim (round floats sensibly, add clear units where obvious, e.g. 'years', 'customers'). "
+                    "Reply in the same language as the user's question — Indonesian if asked in Indonesian, "
+                    "English if asked in English. Do not include markdown, explanations, or text outside the JSON."
+                ),
+            },
+            {
+                "role": "user",
+                "content": f"Question: {user_message}\nComputed result: {result_value!r}",
+            },
+        ]
+        response = self.client.chat.completions.create(messages=messages, model=self.model)
+        parsed = self.code_executor.clean_code(response.choices[0].message.content)
+        reply = parsed.get("reply") if isinstance(parsed, dict) else None
+        return reply or str(result_value)
 
     def chat(self, user_message):
         """Sends a message to the AI, handles execution and self-healing, and returns the result."""
@@ -84,15 +111,19 @@ class ChatBot:
             if isinstance(execution_result, str) and (execution_result.startswith("Error:") or execution_result.startswith("Execution Error:")):
                 if attempt < max_retries - 1:
                     print(f"[Self-Healing] Execution failed on attempt {attempt + 1}. Asking AI to fix...")
-                    error_prompt = f"The code failed with this error:\n{execution_result}\n\nPlease fix the code and write it again. Ensure the output is ONLY valid Python code."
+                    error_prompt = f"The code failed with this error:\n{execution_result}\n\nPlease fix the code and write it again as the same JSON object, with the final answer assigned to a variable named `result`. Ensure the output is ONLY the raw JSON object."
                     self.conversation_history.append({"role": "user", "content": error_prompt})
                     continue
                 else:
                     return f"I'm sorry, I couldn't write the correct code after {max_retries} attempts. Final error: {execution_result}"
 
-            # 7. If no error, return the successful result as a dict
+            # 7. Execution succeeded — phrase the reply from the REAL computed
+            #    value, never from the model's own pre-execution guess.
+            real_result = execution_result.get("result")
+            reply_text = self._phrase_result(user_message, real_result)
+
             return {
-                "reply": execution_result.get("result", ""),
+                "reply": reply_text,
                 "code": execution_result.get("code", ""),
                 "chart": execution_result.get("chart", None)
             }
