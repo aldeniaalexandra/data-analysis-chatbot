@@ -1,6 +1,6 @@
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ??
-  "https://cognitus-ai-607887648313.asia-southeast1.run.app";
+  "https://data-analysis-chatbot-production.up.railway.app";
 
 export interface ChartData {
   type?: "bar" | "pie" | "line";
