@@ -142,12 +142,12 @@ export default function Home() {
   }
 
   async function handleUpload(file: File | undefined) {
-    if (!file || !file.name.endsWith(".csv")) return;
+    if (!file || !file.name.endsWith(".csv") || !activeId) return;
     setUploading(true);
     try {
       const text = await file.text();
       const { headers, rows } = parseCsv(text);
-      const result = await uploadCsv(file);
+      const result = await uploadCsv(file, activeId);
       if (result.status === "success") {
         updateActive((s) => ({
           ...s,
@@ -183,14 +183,14 @@ export default function Home() {
 
   async function handleSend(text?: string) {
     const msg = (text ?? input).trim();
-    if (!msg || !dataLoaded || typing) return;
+    if (!msg || !dataLoaded || typing || !activeId) return;
     setInput("");
     if (inputRef.current) inputRef.current.style.height = "auto";
     setAnimateFrom((prev) => Math.min(prev, active?.messages.length ?? 0));
     pushMessage({ role: "user", text: msg });
     setTyping(true);
     try {
-      const data = await sendChat(msg);
+      const data = await sendChat(msg, activeId);
       pushMessage({
         role: "bot",
         text: data.reply || "No response.",

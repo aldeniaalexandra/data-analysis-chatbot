@@ -21,17 +21,21 @@ export interface UploadResult {
   summary?: unknown;
 }
 
-export async function uploadCsv(file: File): Promise<UploadResult> {
+export async function uploadCsv(file: File, sessionId: string): Promise<UploadResult> {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
+  const res = await fetch(`${API_BASE}/upload`, {
+    method: "POST",
+    headers: { "X-Session-Id": sessionId },
+    body: fd,
+  });
   return res.json();
 }
 
-export async function sendChat(message: string): Promise<ChatReply> {
+export async function sendChat(message: string, sessionId: string): Promise<ChatReply> {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Session-Id": sessionId },
     body: JSON.stringify({ message }),
   });
   return res.json();
